@@ -6,7 +6,10 @@ class Load extends Phaser.Scene{
     preload(){
         this.load.setPath("./assets/");
 
-        this.load.image("onebittilemap_packed", "monochrome_tilemap_packed.png");
+        this.load.atlas("platformer_characters", "tilemap-characters-packed.png", "tilemap-characters-packed.json");
+
+        
+        this.load.image("kenny_onebittilemap_packed", "monochrome_tilemap_packed.png");
         this.load.tilemapTiledJSON("levelOneMap", "levelOneMap.json");
 
         this.load.spritesheet("onebittilemap_sheet", "monochrome_tilemap_packed.png", {

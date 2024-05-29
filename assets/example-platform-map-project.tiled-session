@@ -3,10 +3,21 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "",
+    "activeFile": "levelOneMap.tmx",
     "expandedProjectPaths": [
     ],
     "fileStates": {
+        "levelOneMap.tmx": {
+            "scale": 1.5,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 390.3333333333333,
+                "y": 206.99999999999997
+            }
+        },
+        "levelOneMap.tmx#onebittilemap_packed": {
+            "scaleInDock": 1.5
+        }
     },
     "last.exportedFilePath": "C:/Users/avnvi/OneDrive/Documents/GitHub/platformer/CMPM120-Platformer-Implementation/assets",
     "last.imagePath": "C:/Users/avnvi/OneDrive/Documents/UCSC/KennyAssetsOneBitPlatformer/Tilemap",
@@ -17,9 +28,11 @@
     "map.tileWidth": 16,
     "map.width": 48,
     "openFiles": [
+        "levelOneMap.tmx"
     ],
     "project": "example-platform-map-project.tiled-project",
     "recentFiles": [
+        "levelOneMap.tmx"
     ],
     "tileset.embedInMap": true,
     "tileset.tileSize": {
