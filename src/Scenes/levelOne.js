@@ -4,38 +4,290 @@ class levelOne extends Phaser.Scene{
     }
 
     init() {
-        this.ACCELERATION = 400;
-        this.DRAG = 500;
+        this.ACCELERATION = 300;
+        this.DRAG = 1200;
         this.physics.world.gravity.y = 1500;
         this.JUMP_VELOCITY = -600;
         this.PARTICLE_VELOCITY = 50;
         this.SCALE = 2.0;
+        this.MAX_SPEED = 500;
+
+        //If player is standing on ICe player will be slippery
+        this.onIcyFloor = false;
+
+        //global variable to know if the player has the key to unlock the door or not
+        this.hasKey = false;
+        
+        //If player is currently IDLE
+        this.idle = true;
+
+        //Main Score for the game
+        this.score = 0;
+
 
     }
     
     create(){
-        this.map = this.add.tilemap("levelOneMap", 16, 16, 48, 25);
-        
+
+
+        /*
+        THINGS TO FINISH
+        ADD PARTICLES AND EFFECTS
+        ADD MUSIC
+        ADD WIN CONDITION
+        DESIGN LEVEL
+
+        AFTER EFFECTS
+        ADD UI 
+        ADD DANGER ELEMENTS
+        ADD ANIMATIONS
+        */
+       
+        // Create MAP and TILESET
+        this.map = this.add.tilemap("levelOneMap", 16, 16, 148, 25);
         this.tileset = this.map.addTilesetImage("onebittilemap_packed", "kenny_onebittilemap_packed");
 
+        // Create LAYERS
         this.groundLayer = this.map.createLayer("GroundLayer", this.tileset, 0, 0);
 
-        my.sprite.player = this.physics.add.sprite(50, 50, "platformer_characters", "tile_0000.png");
+        // Create PLAYER and update player PHYSICS and BOUNDS
+        my.sprite.player = this.physics.add.sprite(50, 50, "onebittilemap_sheet", 261);
+        this.physics.world.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
         my.sprite.player.setCollideWorldBounds(true);
+        my.sprite.player.body.setMaxSpeed(this.MAX_SPEED);
 
 
+        // Create OBJECTS from OBJECT LAYER
+        
+        // OBJECT LOCKED DOOR
+        this.lockedDoor = this.map.createFromObjects("Objects", {
+            name: "lockedDoor",
+            key: "onebittilemap_sheet",
+            frame: 56
+        })
+        this.physics.world.enable(this.lockedDoor, Phaser.Physics.Arcade.STATIC_BODY);
+        this.lockedDoorGroup = this.add.group(this.lockedDoor);
+
+        // OBJECT COIN
+        this.coin = this.map.createFromObjects("Objects", {
+            name: "coin",
+            key: "onebittilemap_sheet",
+            frame: 2
+        })
+        this.physics.world.enable(this.coin, Phaser.Physics.Arcade.STATIC_BODY);
+        this.coinGroup = this.add.group(this.coin);
+
+        // OBJECT KEY
+        this.keyUnlock = this.map.createFromObjects("Objects", {
+            name: "key",
+            key: "onebittilemap_sheet",
+            frame: 96
+        })
+        this.physics.world.enable(this.keyUnlock, Phaser.Physics.Arcade.STATIC_BODY);
+        this.keyGroup = this.add.group(this.keyUnlock);
+
+        // OBJECT ICY TILES
+        this.icy = this.map.createFromObjects("Objects", {
+            name: "icyTile",
+            key: "onebittilemap_sheet",
+            frame: 276
+        });
+        this.physics.world.enable(this.icy, Phaser.Physics.Arcade.STATIC_BODY);
+        this.icyFloorGroup = this.add.group(this.icy);
+
+
+        // Create COLLISIONS AND OVERLAPS
+
+        // COLLISION lockedDoor
+        this.physics.add.overlap(my.sprite.player, this.lockedDoorGroup, (obj1, obj2) => {
+            if(this.hasKey == true){
+                this.add.particles(obj2.x, obj2.y, "kenny-particles", {
+                    frame: ["circle_01.png", "circle_02.png", "circle_03.png", "circle_04.png"],
+                    random: true,
+                    scale: {start: 0.5, end: 0.05},
+                    maxAliveParticles: 3,
+                    lifespan: 200,
+                    duration: 200
+                });
+                
+                obj2.destroy();
+                console.log("door opened");
+            }
+        })
+        this.physics.add.collider(my.sprite.player, this.lockedDoorGroup);
+
+        // COLLISION coin
+        this.physics.add.overlap(my.sprite.player, this.coinGroup, (obj1, obj2) => {
+            this.add.particles(obj2.x, obj2.y, "kenny-particles", {
+                frame: ["magic_03.png", "magic_04.png", "magic_05.png"],
+                random: true,
+                scale: {start: 0.03, end: 0.05},
+                maxAliveParticles: 8,
+                lifespan: 350,
+                duration: 500
+            });
+            this.score += 100;
+            obj2.destroy();
+            console.log("Score is now: ", this.score);
+        })
+
+        // COLLISION key
+        this.physics.add.overlap(my.sprite.player, this.keyGroup, (obj1, obj2) =>{
+            this.hasKey = true;
+            console.log("key collected");
+            this.add.particles(obj2.x, obj2.y, "kenny-particles", {
+                frame: ["magic_03.png", "magic_04.png", "magic_05.png"],
+                random: true,
+                scale: {start: 0.03, end: 0.05},
+                maxAliveParticles: 8,
+                lifespan: 350,
+                duration: 500
+            });
+            obj2.destroy();
+        })
+
+        // COLLISION icyTile
+        this.physics.add.overlap(my.sprite.player, this.icyFloorGroup, (obj1, obj2) => {
+            this.add.particles(obj2.x, obj2.y, "kenny-particles", {
+                frame: ['window_03.png'],
+                // TODO: Try: add random: true
+                random: true,
+                scale: {start: 0.03, end: 0.25},
+                // TODO: Try: maxAliveParticles: 8,
+                maxAliveParticles: 3,
+                lifespan: 100,
+                quantity: 2,
+                frequency: 100,
+                gravityY: 300,
+                duration: 100
+            });
+            my.sprite.player.anims.play("slide");
+            this.onIcyFloor = true;
+            
+        });    
+
+        // Create collision with Ground LAYER
         this.groundLayer.setCollisionByProperty({
             collides: true
         });
         this.physics.add.collider(my.sprite.player, this.groundLayer);
 
+        // Create WALKING VFX
+        my.vfx.walkingRight = this.add.particles(0, 0, "kenny-particles", {
+            frame: ['smoke_07.png', 'smoke_08.png', 'smoke_09.png', 'smoke_10.png'],
+            random: true,
+            scale: {start: 0.03, end: 0.05},
+            maxAliveParticles: 3,
+            lifespan: 200,
+            gravityY: -1000,
+            gravityX: -1000,
+            alpha: {start: 0.7, end: 0.1}, 
+        });
+        my.vfx.walkingRight.stop();
+
+        my.vfx.walkingLeft = this.add.particles(0, 0, "kenny-particles", {
+            frame: ['smoke_07.png', 'smoke_08.png', 'smoke_09.png', 'smoke_10.png'],
+            random: true,
+            scale: {start: 0.03, end: 0.05},
+            maxAliveParticles: 3,
+            lifespan: 200,
+            gravityY: -1000,
+            gravityX: 1000,
+            alpha: {start: 0.7, end: 0.1}, 
+        });
+        my.vfx.walkingLeft.stop();
+
+
+
+
+        // Create CAMERA 
         this.cameras.main.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
         this.cameras.main.startFollow(my.sprite.player, true, 0.25, 0.25); // (target, [,roundPixels][,lerpX][,lerpY])
-        this.cameras.main.setDeadzone(50, 50);
+        this.cameras.main.setDeadzone(50, 70);
         this.cameras.main.setZoom(this.SCALE);
+
+
+      // set up Phaser-provided cursor key input
+      cursors = this.input.keyboard.createCursorKeys();
+
+
+      // debug key listener (assigned to D key)
+      this.input.keyboard.on('keydown-D', () => {
+          this.physics.world.drawDebug = this.physics.world.drawDebug ? false : true
+          this.physics.world.debugGraphic.clear()
+      }, this);        
+
+      // Begin Player Idle animation
+      my.sprite.player.anims.play('idle');
+
     }
 
     update(){
-        
+
+        // If player is on an icy floor make player slide around
+        if(this.onIcyFloor){
+            this.DRAG = 100;
+            this.onIcyFloor = false;
+        }
+        else{
+            this.DRAG = 1200;
+        }
+
+        // Movement
+        if(cursors.left.isDown) {
+            my.sprite.player.setAccelerationX(-this.ACCELERATION);
+            my.sprite.player.setFlip(true, false);
+            my.sprite.player.anims.play('walk', true);
+            this.idle = false;
+
+            my.vfx.walkingLeft.startFollow(my.sprite.player, my.sprite.player.displayWidth/2-10, my.sprite.player.displayHeight/2-5, false);
+            my.vfx.walkingLeft.setParticleSpeed(this.PARTICLE_VELOCITY, 0);
+
+            if (my.sprite.player.body.blocked.down) {
+
+                my.vfx.walkingLeft.start();
+
+            }
+
+        } else if(cursors.right.isDown) {
+            my.sprite.player.setAccelerationX(this.ACCELERATION);
+
+            my.sprite.player.resetFlip();
+            my.sprite.player.anims.play('walk', true);
+            this.idle = false;
+
+            my.vfx.walkingRight.startFollow(my.sprite.player, my.sprite.player.displayWidth/2-10, my.sprite.player.displayHeight/2-5, false);
+
+            my.vfx.walkingRight.setParticleSpeed(this.PARTICLE_VELOCITY, 0);
+
+            if (my.sprite.player.body.blocked.down) {
+
+                my.vfx.walkingRight.start();
+
+
+            }
+
+        } else {
+            if(this.idle == false){
+                my.sprite.player.anims.play('idle');
+                this.idle = true;
+            }
+            // Set acceleration to 0 and have DRAG take over
+            my.sprite.player.setAccelerationX(0);
+            my.sprite.player.setDragX(this.DRAG);
+
+            my.vfx.walkingRight.stop();
+            my.vfx.walkingLeft.stop();
+        }
+
+        // player jump
+        if(!my.sprite.player.body.blocked.down) {
+            my.sprite.player.anims.play('jump');
+            this.idle =false;
+        }
+        if(my.sprite.player.body.blocked.down && Phaser.Input.Keyboard.JustDown(cursors.up)) {
+            my.sprite.player.body.setVelocityY(this.JUMP_VELOCITY);
+
+        }
     }
 }

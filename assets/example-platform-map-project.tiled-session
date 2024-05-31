@@ -3,20 +3,53 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "levelOneMap.tmx",
+    "activeFile": "C:/Users/avnvi/OneDrive/Documents/UCSC/CMPM120/PathfindingSection/Pathfinder/assets/tiny-town-tileset.tmx",
     "expandedProjectPaths": [
     ],
     "fileStates": {
-        "levelOneMap.tmx": {
+        "": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "C:/Users/avnvi/OneDrive/Documents/UCSC/CMPM120/PathfindingSection/Pathfinder/assets/tiny-town-tileset.tmx": {
             "scale": 1.5,
             "selectedLayer": 0,
             "viewCenter": {
                 "x": 390.3333333333333,
-                "y": 206.99999999999997
+                "y": 174.33333333333337
+            }
+        },
+        "C:/Users/avnvi/OneDrive/Documents/UCSC/CMPM120/PathfindingSection/Pathfinder/assets/tiny-town-tileset.tmx#kenney-tiny-town": {
+            "scaleInDock": 1
+        },
+        "C:/Users/avnvi/OneDrive/Documents/UCSC/CMPM120/PlatformImprovement/PlatformImprovement/assets/platformer-level-1.tmx": {
+            "expandedObjectLayers": [
+                3
+            ],
+            "scale": 1.5,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 434.3333333333333,
+                "y": 277.66666666666663
+            }
+        },
+        "C:/Users/avnvi/OneDrive/Documents/UCSC/CMPM120/PlatformImprovement/PlatformImprovement/assets/platformer-level-1.tmx#kenny_tilemap_packed": {
+            "scaleInDock": 1
+        },
+        "levelOneMap.tmx": {
+            "expandedObjectLayers": [
+                2
+            ],
+            "scale": 2,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 1353.25,
+                "y": 672.25
             }
         },
         "levelOneMap.tmx#onebittilemap_packed": {
-            "scaleInDock": 1.5
+            "scaleInDock": 3,
+            "scaleInEditor": 2
         }
     },
     "last.exportedFilePath": "C:/Users/avnvi/OneDrive/Documents/GitHub/platformer/CMPM120-Platformer-Implementation/assets",
@@ -28,11 +61,15 @@
     "map.tileWidth": 16,
     "map.width": 48,
     "openFiles": [
-        "levelOneMap.tmx"
+        "levelOneMap.tmx",
+        "C:/Users/avnvi/OneDrive/Documents/UCSC/CMPM120/PathfindingSection/Pathfinder/assets/tiny-town-tileset.tmx"
     ],
     "project": "example-platform-map-project.tiled-project",
+    "property.type": "bool",
     "recentFiles": [
-        "levelOneMap.tmx"
+        "levelOneMap.tmx",
+        "C:/Users/avnvi/OneDrive/Documents/UCSC/CMPM120/PlatformImprovement/PlatformImprovement/assets/platformer-level-1.tmx",
+        "C:/Users/avnvi/OneDrive/Documents/UCSC/CMPM120/PathfindingSection/Pathfinder/assets/tiny-town-tileset.tmx"
     ],
     "tileset.embedInMap": true,
     "tileset.tileSize": {
