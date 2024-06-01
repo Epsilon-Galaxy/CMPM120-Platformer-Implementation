@@ -285,7 +285,8 @@ class levelOne extends Phaser.Scene{
           this.physics.world.debugGraphic.clear()
       }, this);        
 
-
+      this.physics.world.drawDebug = this.physics.world.drawDebug ? false : true
+      this.physics.world.debugGraphic.clear()
 
       // Begin Player Idle animation
       my.sprite.player.anims.play('idle');
