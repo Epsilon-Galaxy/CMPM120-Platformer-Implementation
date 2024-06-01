@@ -20,10 +20,18 @@ class Load extends Phaser.Scene{
         //Load particles as a multiatlas
         this.load.multiatlas("kenny-particles", "kenny-particles.json");
 
+
+        //load bitmapFont
+        this.load.bitmapFont("KennyPixel", "KennyPixelFont_0.png", "KennyPixelFont.fnt");
+
         //Load sounds
         //this.load.audio("hookSound", "highDown.ogg");
         //this.load.audio("catchSound", "pepSound3.ogg");
         //Play sounds using this.sound.play("hookSound");
+        this.load.audio("coinSound", "impactGlass_medium_003.ogg");
+        this.load.audio("deathSound", "impactBell_heavy_001.ogg");
+        this.load.audio("walkingSound", "footstep_concrete_000.ogg");
+        this.load.audio("iceSound", "footstep_snow_000.ogg");
     }
     
     create() {

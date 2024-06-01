@@ -24,6 +24,13 @@ class levelOne extends Phaser.Scene{
         //Main Score for the game
         this.score = 0;
 
+        this.currentSpawnX = 0;
+        this.currentSpawnY = 0;
+
+        this.gameOver = false;
+
+        this.soundCounter = 0;
+        this.soundTimer = 5;
 
     }
     
@@ -49,15 +56,43 @@ class levelOne extends Phaser.Scene{
 
         // Create LAYERS
         this.groundLayer = this.map.createLayer("GroundLayer", this.tileset, 0, 0);
+        this.detailLayer = this.map.createLayer("details", this.tileset, 0, 0);
 
         // Create PLAYER and update player PHYSICS and BOUNDS
-        my.sprite.player = this.physics.add.sprite(50, 50, "onebittilemap_sheet", 261);
+        my.sprite.player = this.physics.add.sprite(this.currentSpawnX, this.currentSpawnY, "onebittilemap_sheet", 261);
         this.physics.world.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
         my.sprite.player.setCollideWorldBounds(true);
         my.sprite.player.body.setMaxSpeed(this.MAX_SPEED);
 
-
+        
         // Create OBJECTS from OBJECT LAYER
+
+        // OBJECT SPIKE
+        this.spike = this.map.createFromObjects("Objects", {
+            name: "spike",
+            key: "onebittilemap_sheet",
+            frame: 183
+        })
+        this.physics.world.enable(this.spike, Phaser.Physics.Arcade.STATIC_BODY);
+        this.spikeGroup = this.add.group(this.spike);
+
+        // OBJECT TREASURE
+        this.treasure = this.map.createFromObjects("Objects", {
+            name: "treasure",
+            key: "onebittilemap_sheet",
+            frame: 389
+        })
+        this.physics.world.enable(this.treasure, Phaser.Physics.Arcade.STATIC_BODY);
+        this.treasureGroup = this.add.group(this.treasure);
+
+        // OBJECT SPAWN
+        this.spawn = this.map.createFromObjects("Objects", {
+            name: "spawnPoint",
+            key: "onebittilemap_sheet",
+            frame: 185
+        })
+        this.physics.world.enable(this.spawn, Phaser.Physics.Arcade.STATIC_BODY);
+        this.spawnGroup = this.add.group(this.spawn);
         
         // OBJECT LOCKED DOOR
         this.lockedDoor = this.map.createFromObjects("Objects", {
@@ -98,6 +133,33 @@ class levelOne extends Phaser.Scene{
 
         // Create COLLISIONS AND OVERLAPS
 
+        // COLLISION spike
+        this.physics.add.overlap(my.sprite.player, this.spikeGroup, (obj1, obj2) =>{
+            this.add.particles(obj2.x, obj2.y, "kenny-particles", {
+                frame: ["slash_01.png", "slash_02.png", "slash_03.png", "slash_04.png"],
+                random: true,
+                scale: {start: 0.5, end: 0.05},
+                maxAliveParticles: 3,
+                lifespan: 300,
+                duration: 300
+            });
+            this.respawn();
+            this.sound.play("deathSound");
+        })
+
+        // COLLISION treasure
+        this.physics.add.overlap(my.sprite.player, this.treasureGroup, (obj1, obj2) =>{
+            console.log("gameOver");
+            this.gameOver = true;
+            obj2.destroy();
+        })
+
+        // COLLISION checkpoint
+        this.physics.add.overlap(my.sprite.player, this.spawnGroup, (obj1, obj2) =>{
+            this.currentSpawnX = obj2.x;
+            this.currentSpawnY = obj2.y;
+        })
+
         // COLLISION lockedDoor
         this.physics.add.overlap(my.sprite.player, this.lockedDoorGroup, (obj1, obj2) => {
             if(this.hasKey == true){
@@ -112,6 +174,7 @@ class levelOne extends Phaser.Scene{
                 
                 obj2.destroy();
                 console.log("door opened");
+                this.sound.play("coinSound");
             }
         })
         this.physics.add.collider(my.sprite.player, this.lockedDoorGroup);
@@ -127,8 +190,10 @@ class levelOne extends Phaser.Scene{
                 duration: 500
             });
             this.score += 100;
+
             obj2.destroy();
             console.log("Score is now: ", this.score);
+            this.sound.play("coinSound");
         })
 
         // COLLISION key
@@ -143,6 +208,7 @@ class levelOne extends Phaser.Scene{
                 lifespan: 350,
                 duration: 500
             });
+            this.sound.play("coinSound");
             obj2.destroy();
         })
 
@@ -209,6 +275,8 @@ class levelOne extends Phaser.Scene{
 
       // set up Phaser-provided cursor key input
       cursors = this.input.keyboard.createCursorKeys();
+      this.rKey = this.input.keyboard.addKey('R');
+
 
 
       // debug key listener (assigned to D key)
@@ -217,77 +285,154 @@ class levelOne extends Phaser.Scene{
           this.physics.world.debugGraphic.clear()
       }, this);        
 
+
+
       // Begin Player Idle animation
       my.sprite.player.anims.play('idle');
+
+      // Set player spawn at beginning
+      this.currentSpawnX = this.spawn[0].x;
+      this.currentSpawnY = this.spawn[0].y;
+      this.respawn();
+
+      
 
     }
 
     update(){
 
-        // If player is on an icy floor make player slide around
-        if(this.onIcyFloor){
-            this.DRAG = 100;
-            this.onIcyFloor = false;
-        }
-        else{
-            this.DRAG = 1200;
-        }
-
-        // Movement
-        if(cursors.left.isDown) {
-            my.sprite.player.setAccelerationX(-this.ACCELERATION);
-            my.sprite.player.setFlip(true, false);
-            my.sprite.player.anims.play('walk', true);
-            this.idle = false;
-
-            my.vfx.walkingLeft.startFollow(my.sprite.player, my.sprite.player.displayWidth/2-10, my.sprite.player.displayHeight/2-5, false);
-            my.vfx.walkingLeft.setParticleSpeed(this.PARTICLE_VELOCITY, 0);
-
-            if (my.sprite.player.body.blocked.down) {
-
-                my.vfx.walkingLeft.start();
-
-            }
-
-        } else if(cursors.right.isDown) {
-            my.sprite.player.setAccelerationX(this.ACCELERATION);
-
-            my.sprite.player.resetFlip();
-            my.sprite.player.anims.play('walk', true);
-            this.idle = false;
-
-            my.vfx.walkingRight.startFollow(my.sprite.player, my.sprite.player.displayWidth/2-10, my.sprite.player.displayHeight/2-5, false);
-
-            my.vfx.walkingRight.setParticleSpeed(this.PARTICLE_VELOCITY, 0);
-
-            if (my.sprite.player.body.blocked.down) {
-
-                my.vfx.walkingRight.start();
-
-
-            }
-
-        } else {
+        if(this.gameOver == true){
+            my.sprite.player.body.setVelocityX(0);
+            my.sprite.player.body.setVelocityY(0);
+            my.sprite.player.body.setAccelerationX(0);
+            my.sprite.player.body.setAccelerationY(0);
+            this.scoreText = this.add.bitmapText(60, 230, "KennyPixel", "Score: " + this.score, 32);
+            this.endGame = this.add.bitmapText(60, 60, "KennyPixel", "GOOD GAME", 32);
+            this.restartGame = this.add.bitmapText(60, 300, "KennyPixel", "Press 'R' to restart", 32);
             if(this.idle == false){
                 my.sprite.player.anims.play('idle');
                 this.idle = true;
+                my.vfx.walkingRight.stop();
+                my.vfx.walkingLeft.stop();
             }
-            // Set acceleration to 0 and have DRAG take over
-            my.sprite.player.setAccelerationX(0);
-            my.sprite.player.setDragX(this.DRAG);
 
-            my.vfx.walkingRight.stop();
-            my.vfx.walkingLeft.stop();
+            if(Phaser.Input.Keyboard.JustDown(this.rKey)) {
+                this.scoreText.visible = false;
+                this.endGame.visible = false;
+                this.restartGame.visible = false;
+                this.scene.restart();
+            }
+        }
+        else{
+            // If player is on an icy floor make player slide around
+            if(this.onIcyFloor){
+                this.DRAG = 100;
+                this.onIcyFloor = false;
+            }
+            else{
+                this.DRAG = 1200;
+            }
+
+            // Movement
+            if(cursors.left.isDown) {
+                my.sprite.player.setAccelerationX(-this.ACCELERATION);
+                my.sprite.player.setFlip(true, false);
+                my.sprite.player.anims.play('walk', true);
+                this.idle = false;
+
+                my.vfx.walkingLeft.startFollow(my.sprite.player, my.sprite.player.displayWidth/2-10, my.sprite.player.displayHeight/2-5, false);
+                my.vfx.walkingLeft.setParticleSpeed(this.PARTICLE_VELOCITY, 0);
+
+                if (my.sprite.player.body.blocked.down) {
+
+                    my.vfx.walkingLeft.start();
+                    if(this.soundCounter >= this.soundTimer){
+                        if(this.icyFloor == true){
+                            this.sound.play("iceSound");
+                        }
+                        else{
+                            this.sound.play("walkingSound");
+                        }
+                        this.soundCounter = 0;
+                    }
+                    else{
+                        this.soundCounter += 1;
+                    }
+
+                }
+
+            } else if(cursors.right.isDown) {
+                my.sprite.player.setAccelerationX(this.ACCELERATION);
+
+                my.sprite.player.resetFlip();
+                my.sprite.player.anims.play('walk', true);
+                this.idle = false;
+
+                my.vfx.walkingRight.startFollow(my.sprite.player, my.sprite.player.displayWidth/2-10, my.sprite.player.displayHeight/2-5, false);
+
+                my.vfx.walkingRight.setParticleSpeed(this.PARTICLE_VELOCITY, 0);
+
+                if (my.sprite.player.body.blocked.down) {
+
+                    my.vfx.walkingRight.start();
+                    if(this.soundCounter >= this.soundTimer){
+                        if(this.icyFloor == true){
+                            this.sound.play("iceSound");
+                        }
+                        else{
+                            this.sound.play("walkingSound");
+                        }
+
+                        this.soundCounter = 0;
+                    }
+                    else{
+                        this.soundCounter += 1;
+                    }
+                }
+
+            } else {
+                if(this.idle == false){
+                    my.sprite.player.anims.play('idle');
+                    this.idle = true;
+                }
+                // Set acceleration to 0 and have DRAG take over
+                my.sprite.player.setAccelerationX(0);
+                my.sprite.player.setDragX(this.DRAG);
+
+                my.vfx.walkingRight.stop();
+                my.vfx.walkingLeft.stop();
+            }
+
+            // player jump
+            if(!my.sprite.player.body.blocked.down) {
+                my.sprite.player.anims.play('jump');
+                
+                this.idle =false;
+            }
+            if(my.sprite.player.body.blocked.down && Phaser.Input.Keyboard.JustDown(cursors.up)) {
+                this.sound.play("iceSound");
+                my.sprite.player.body.setVelocityY(this.JUMP_VELOCITY);
+
+            }
         }
 
-        // player jump
-        if(!my.sprite.player.body.blocked.down) {
-            my.sprite.player.anims.play('jump');
-            this.idle =false;
-        }
-        if(my.sprite.player.body.blocked.down && Phaser.Input.Keyboard.JustDown(cursors.up)) {
-            my.sprite.player.body.setVelocityY(this.JUMP_VELOCITY);
+    }
 
-        }
+    respawn(){
+        console.log("Respawning");
+        my.sprite.player.body.setVelocityX(0);
+        my.sprite.player.body.setVelocityY(0);
+        my.sprite.player.body.setAccelerationX(0);
+        my.sprite.player.body.setAccelerationY(0);
+        my.sprite.player.x = this.currentSpawnX;
+        my.sprite.player.y = this.currentSpawnY;
+        this.add.particles(this.currentSpawnX, this.currentSpawnY, "kenny-particles", {
+            frame: ["circle_01.png", "circle_02.png", "circle_03.png", "circle_04.png"],
+            random: true,
+            scale: {start: 0.5, end: 0.05},
+            maxAliveParticles: 3,
+            lifespan: 200,
+            duration: 200
+        });
     }
 }
